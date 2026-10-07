@@ -1,23 +1,42 @@
-# import zipfile
-
-# a = zipfile.is_zipfile("app1.zip")
-# print(a)
-
-from flask import Flask, send_from_directory
+from flask import Flask, jsonify
+from playwright.sync_api import sync_playwright
 
 app = Flask(__name__)
 
+
 @app.route("/")
-def index():
-    return "File server is running"
+def home():
+    return jsonify({
+        "status": "ok",
+        "service": "Flask + Playwright",
+        "message": "API is running"
+    })
 
-@app.route("/download/cpp.zip")
-def download():
-    return send_from_directory(
-        "files",
-        "app1.zip",
-        as_attachment=True
-    )
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+@app.route("/api/test")
+def test_playwright():
+
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(
+            headless=True
+        )
+
+        page = browser.new_page()
+
+        page.goto(
+            "https://example.com",
+            wait_until="domcontentloaded"
+        )
+
+        title = page.title()
+        url = page.url
+
+        browser.close()
+
+    return jsonify({
+        "success": True,
+        "title": title,
+        "url": url
+    })
+app.run()
