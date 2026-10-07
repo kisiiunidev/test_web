@@ -39,4 +39,3 @@ def test_playwright():
         "title": title,
         "url": url
     })
-app.run()
